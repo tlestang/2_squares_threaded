@@ -1,4 +1,4 @@
-CXXFLAGS=-O3 -D _RANDOM -D _FORCEONWALLS
+CXXFLAGS=-O3 -D _RANDOM
 LDFLAGS=-lpthread
 
 current: main.o initialize_lattice_arrays.o streamCollCompute.o domain_noSlipWalls.o square.o force.o forceOnWalls.o write_vtk.o generateInitialState.o

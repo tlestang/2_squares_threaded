@@ -30,7 +30,7 @@ int generateInitialState(double*, string, int);
 
 int c[9][2] = {{0,0}, {1,0}, {0,1}, {-1,0}, {0,-1}, {1,1}, {-1,1}, {-1,-1}, {1,-1}};
 double w[9]={4.0/9.0, 1.0/9.0, 1.0/9.0, 1.0/9.0, 1.0/9.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0};
-int Dx, Dy, xmin, xmax, ymin, ymax;
+int Dx, Dy, xmin1, xmax1, ymin1, ymax1, xmin2, xmax2, ymin2, ymax2;
 
 int main(int argc, char* argv[])
 {
@@ -58,11 +58,13 @@ int main(int argc, char* argv[])
       input_file.close();
       
   /* --- Compute or define other parameters --- */
-      Dy = 4*Ly + 1; Dx = Dy;
 
+      Dy = 4*Ly + 1, Dx = 3*(Dy-1) + 1;
       int N = Dx*Dy*9;
-      xmin = (Dx-1)/2; xmax = xmin + Lx;
-      ymin = (Dy-1)/2 - Ly/2; ymax = ymin + Ly;
+      xmin1 = Dy-1; xmax1 = xmin1 + Lx;
+      ymin1 = (Dy-1)/2 - Ly/2; ymax1 = ymin1 + Ly;
+      xmin2 = 2*(Dy-1); xmax2 = xmin2 + Lx;
+      ymin2 = (Dy-1)/2 - Ly/2; ymax2 = ymin2 + Ly;
       double cs = 1./sqrt(3); double rho0 = 1.0;
       double u0 = cs*cs*Ma; double uxSum, uxMean;
       double nu = 1./3.*(tau-0.5);
@@ -177,13 +179,27 @@ int main(int argc, char* argv[])
 	      computeDomainNoSlipWalls_BB(fout, fin);
 	      computeSquareBounceBack_TEST(fout, fin);
 	      /*Reset square nodes to equilibrium*/
-	      for(int x=xmin+1;x<xmax;x++)
+	      for(int x=xmin1+1;x<xmax1;x++)
 		{
-		  for(int y=ymin+1;y<ymax;y++)
+		  for(int y=ymin1+1;y<ymax1;y++)
 		    {
 		      for(int k=0;k<9;k++)
 			{
+			  //fout[IDX(x,y,k)] = w[k]*rho[idx(x,y)];
 			  fout[IDX(x,y,k)] = w[k];
+			  rho[idx(x,y)] = rho0;
+			}
+		    }
+		}
+	      for(int x=xmin2+1;x<xmax2;x++)
+		{
+		  for(int y=ymin2+1;y<ymax2;y++)
+		    {
+		      for(int k=0;k<9;k++)
+			{
+			  //fout[IDX(x,y,k)] = w[k]*rho[idx(x,y)];
+			  fout[IDX(x,y,k)] = w[k];
+			  rho[idx(x,y)] = rho0;
 			}
 		    }
 		}
@@ -209,11 +225,11 @@ int main(int argc, char* argv[])
 		  forceWallsFile.write((char*)&Fwalls, sizeof(double));
 		}
 #endif
-	      // if(lbTimeStepCount%facquVtk==0)
-	      // 	{
-	      // 	  write_fluid_vtk(tt, Dx, Dy, rho, ux, uy, folderName.c_str());
-	      // 	  tt++;
-	      // 	}
+	      if(lbTimeStepCount%facquVtk==0)
+	      	{
+	      	  write_fluid_vtk(tt, Dx, Dy, rho, ux, uy, folderName.c_str());
+	      	  tt++;
+	      	}
 	      
 	      // /*Write velocity at a given point*/
 	      // if(lbTimeStepCount%facqU==0)
